@@ -1,20 +1,13 @@
 # Update für samsingw/it-notfall-orchestrator
 
-Dieses Archiv gehört ausschließlich in das Repository, das das Container-Image baut.
+Aktueller Walking-Skeleton-Schritt: **M-ST-001 wird korrekt angezeigt**.
 
-Zu ersetzen/übernehmen:
+Enthalten:
 
-```text
-app/main.py
-```
+- `app/main.py`
+- `checklists/M-ST-001.json`
+- `Dockerfile`
 
-Der vorhandene Dockerfile-, requirements.txt- und GitHub-Actions-Stand bleibt unverändert.
+Die bestehende Fleet-HTTPRoute mit `PathPrefix: /` benötigt keine Änderung. Incidents und Checklistenstatus bleiben weiterhin nur im RAM; es gibt noch keine Abschlusslogik und keine Persistenz.
 
-Implementiert:
-
-- GET /health
-- GET /
-- POST /incidents
-- GET /incidents/{id}
-
-Incidents liegen absichtlich nur im RAM.
+Nach Push und erfolgreichem GitHub-Actions-Build das Deployment neu starten, solange `latest` verwendet wird. Dann über Android einen Incident anlegen und den Link zu `M-ST-001` öffnen.
