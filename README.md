@@ -1,44 +1,27 @@
-# Update für samsingw/it-notfall-orchestrator
+# Manuelle Synchronisation von M-ST-001
 
-Aktueller Walking-Skeleton-Schritt:
+Dieses Paket gehört ausschließlich in `samsingw/it-notfall-orchestrator`.
 
-```text
-Checkliste lässt sich abschließen
-```
+## Source of Truth
 
-Dieses Update gehört ausschließlich in das Source-/Image-Repository.
+Nicht die JSON-Datei pflegen.
 
-Zu ersetzen:
+Maßgeblich ist:
 
-```text
-app/main.py
-```
+`IT-Notfall/docs/10_Massnahmen/SmartHome/M-ST-001_Batterie-Samsung-SmartTag-1-wechseln.md`
 
-Keine Änderung an Fleet/HTTPRoute notwendig.
+`checklists/generated/M-ST-001.json` ist nur ein vorläufig manuell synchronisiertes
+Laufzeit-Artefakt.
 
-## Neu
+## Übernahme
 
-- neuer Incident-Zustand `checklist_status`
-- `NOT_STARTED` beim Anlegen
-- `IN_PROGRESS` beim ersten Öffnen von M-ST-001
-- Button `Checkliste abgeschlossen`
-- `POST /incidents/{id}/checklist/complete`
-- danach `COMPLETED`
-- Incident-Seite zeigt den Checklistenstatus
+1. `checklists/generated/M-ST-001.json` ins Orchestrator-Repo übernehmen.
+2. Die alte `checklists/M-ST-001.json` entfernen.
+3. In `app/main.py` den `CHECKLIST_DIR` wie in `app/CHECKLIST_DIR.patch.txt`
+   auf `/app/checklists/generated` ändern.
+4. Das vorhandene Dockerfile kann unverändert bleiben, sofern es bereits
+   `COPY checklists ./checklists` enthält.
+5. Build + Rollout durchführen.
 
-## Bewusst noch nicht enthalten
-
-- Ergebnis `gelöst/nicht gelöst`
-- Datenbank
-- Persistenz über Pod-Neustart
-
-## Abnahmetest
-
-1. Source-Repo committen und pushen.
-2. GitHub-Actions-Build abwarten.
-3. Deployment auf Test neu starten.
-4. Incident anlegen.
-5. M-ST-001 öffnen.
-6. Button `Checkliste abgeschlossen` drücken.
-7. Erwartet auf der Incident-Seite: `Checkliste abgeschlossen`.
-8. Dasselbe auf Prod testen.
+Die echten Bilder werden in diesem Schritt noch nicht vom Orchestrator ausgeliefert.
+Das JSON enthält nur deren Referenzen. Die Bildintegration kommt separat.

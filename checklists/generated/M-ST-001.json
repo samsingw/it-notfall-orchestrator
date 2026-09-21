@@ -1,0 +1,112 @@
+{
+  "generated": true,
+  "generated_from": "IT-Notfall/docs/10_Massnahmen/SmartHome/M-ST-001_Batterie-Samsung-SmartTag-1-wechseln.md",
+  "id": "M-ST-001",
+  "title": "Batterie eines Samsung SmartTag 1 wechseln",
+  "goal": "Die Batterie eines Samsung SmartTag der 1. Generation wechseln.",
+  "needed": [
+    "neue Batterie CR2032",
+    "blaues iFixit-Werkzeug mit flachen breiten Enden",
+    "iFixit-Plastikkarte",
+    "schwarzes iFixit-Werkzeug mit Spitze"
+  ],
+  "tool_location": [
+    "Werkzeugschrank",
+    "roter Werkzeugkasten",
+    "rechte obere kleine Schublade",
+    "weißer Plastikbeutel"
+  ],
+  "images": [
+    {
+      "file": "tools.jpg",
+      "caption": "Benötigte iFixit-Werkzeuge"
+    },
+    {
+      "file": "tools-location.jpg",
+      "caption": "Standort der iFixit-Werkzeuge"
+    }
+  ],
+  "steps": [
+    {
+      "number": 1,
+      "title": "Gehäuse an der Einkerbung anlösen",
+      "actions": [
+        "Das blaue iFixit-Werkzeug mit den flachen breiten Enden in die Einkerbung an der Unterseite des SmartTags einsetzen.",
+        "Vorsichtig hebeln, bis sich das Gehäuse an der Einkerbung leicht öffnet."
+      ],
+      "expected": [
+        "Ein kleiner Spalt ist sichtbar."
+      ],
+      "image": {
+        "file": "blue-tool-notch.jpg",
+        "caption": "Blaues Werkzeug in der Einkerbung"
+      }
+    },
+    {
+      "number": 2,
+      "title": "Gehäuse mit der Plastikkarte öffnen",
+      "actions": [
+        "Die iFixit-Plastikkarte in den entstandenen Spalt einsetzen.",
+        "Die Karte entlang des Schlitzes führen.",
+        "Weiter entlang des Gehäuserands fahren, bis sich die Verriegelungen lösen."
+      ],
+      "expected": [
+        "Das Gehäuse lässt sich ohne Gewalt vollständig öffnen."
+      ],
+      "image": {
+        "file": "card-slot.jpg",
+        "caption": "Plastikkarte entlang des Schlitzes"
+      }
+    },
+    {
+      "number": 3,
+      "title": "Gehäuse öffnen",
+      "actions": [
+        "Beide Gehäusehälften vorsichtig auseinandernehmen."
+      ],
+      "expected": [
+        "Das SmartTag ist geöffnet.",
+        "Die Batterie ist frei zugänglich."
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Alte Batterie entfernen",
+      "actions": [
+        "Das schwarze iFixit-Werkzeug mit Spitze am Rand der Batterie ansetzen.",
+        "Die Batterie vorsichtig aus der Halterung hebeln."
+      ],
+      "expected": [
+        "Die alte CR2032 ist entfernt."
+      ],
+      "image": {
+        "file": "black-tool-battery.jpg",
+        "caption": "Schwarzes Werkzeug beim Entfernen der Batterie"
+      }
+    },
+    {
+      "number": 5,
+      "title": "Neue Batterie einsetzen",
+      "actions": [
+        "Neue Batterie vom Typ CR2032 einsetzen.",
+        "Darauf achten, dass die beschriftete Seite mit dem Pluszeichen (+) nach oben zeigt."
+      ],
+      "expected": [
+        "Die Batterie liegt vollständig und flach in der Halterung."
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Gehäuse schließen",
+      "actions": [
+        "Beide Gehäusehälften genau ausrichten.",
+        "Gehäuse zusammendrücken, bis die Verriegelungen einrasten."
+      ],
+      "expected": [
+        "Das Gehäuse ist rundherum geschlossen.",
+        "Es ist kein relevanter Spalt mehr sichtbar."
+      ]
+    }
+  ],
+  "completion": "Der Batteriewechsel ist abgeschlossen. Zur Diagnose zurückkehren und dort prüfen, ob der SmartTag wieder erreichbar ist."
+}

@@ -1,0 +1,3 @@
+In app/main.py den bisherigen CHECKLIST_DIR auf folgenden Pfad ändern:
+
+CHECKLIST_DIR = Path("/app/checklists/generated")
