@@ -1,4 +1,4 @@
-# Update: Ergebnis „gelöst / nicht gelöst“
+# UI-Verbesserungen für die Incident-Seite
 
 Dieses Update gehört ausschließlich in das Source-/Image-Repository
 `samsingw/it-notfall-orchestrator`.
@@ -7,41 +7,25 @@ Enthalten:
 
 ```text
 app/main.py
+README.md
 ```
 
-Nach Abschluss von M-ST-001 erscheinen auf der Incident-Seite zwei Buttons:
+## Änderungen
 
-- `Gelöst`
-- `Nicht gelöst`
-
-Die Auswahl wird derzeit nur im RAM gespeichert.
-
-`Gelöst` setzt:
+- `Status`, `Checkliste`, `Ergebnis` und `Angelegt` werden jetzt als einfache
+  Tabelle angezeigt statt als button-artige Felder.
+- Der bisherige Link zur Maßnahme wurde durch einen auffälligen Button ersetzt:
 
 ```text
-result = SOLVED
-status = SOLVED
+Jetzt Checkliste öffnen und Schritt für Schritt durchführen
 ```
 
-`Nicht gelöst` setzt:
+Funktional ändert sich nichts.
 
-```text
-result = UNRESOLVED
-status = UNRESOLVED
-```
+## Kurztest
 
-Noch nicht enthalten:
-
-- Datenbank
-- Persistenz
-- Wiederherstellung nach Pod-Neustart
-
-Abnahmetest auf Test und Prod:
-
-1. neuen Incident anlegen
-2. M-ST-001 öffnen
-3. Checkliste abschließen
-4. `Gelöst` wählen und Anzeige prüfen
-5. neuen Incident anlegen
-6. Checkliste abschließen
-7. `Nicht gelöst` wählen und Anzeige prüfen
+1. Incident anlegen
+2. prüfen, ob die Incident-Daten tabellarisch angezeigt werden
+3. prüfen, ob der neue große Button gut sichtbar ist
+4. Button anklicken
+5. kontrollieren, dass M-ST-001 geöffnet wird

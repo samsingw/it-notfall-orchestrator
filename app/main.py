@@ -34,12 +34,18 @@ def page(title: str, body: str) -> HTMLResponse:
         display: inline-block;
         padding: .8rem 1rem;
         margin: .25rem .25rem .25rem 0;
+        text-decoration: none;
+        border: 1px solid #666;
+        border-radius: .4rem;
+        background: #f5f5f5;
+        color: #111;
       }}
-      .status {{
-        display: inline-block;
-        padding: .2rem .5rem;
-        border: 1px solid currentColor;
-        border-radius: .3rem;
+      .primary-action {{
+        display: block;
+        width: fit-content;
+        font-weight: 700;
+        padding: 1rem 1.25rem;
+        margin: 1rem 0 1.25rem 0;
       }}
       .step {{
         border-top: 1px solid #bbb;
@@ -58,6 +64,22 @@ def page(title: str, body: str) -> HTMLResponse:
         margin-top: 1.5rem;
         padding-top: 1rem;
         border-top: 1px solid #bbb;
+      }}
+      .incident-table {{
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0 1.25rem 0;
+      }}
+      .incident-table th,
+      .incident-table td {{
+        text-align: left;
+        vertical-align: top;
+        padding: .55rem .6rem;
+        border: 1px solid #bbb;
+      }}
+      .incident-table th {{
+        width: 10rem;
+        background: #f3f3f3;
       }}
       code {{
         overflow-wrap: anywhere;
@@ -168,28 +190,33 @@ def show_incident(incident_id: str) -> HTMLResponse:
         f"""
         <h1>{escape(str(incident["title"]))}</h1>
 
-        <dl>
-          <dt>Incident-ID</dt>
-          <dd><code>{escape(str(incident["id"]))}</code></dd>
+        <table class="incident-table">
+          <tr>
+            <th>Incident-ID</th>
+            <td><code>{escape(str(incident["id"]))}</code></td>
+          </tr>
+          <tr>
+            <th>Status</th>
+            <td>{escape(str(incident["status"]))}</td>
+          </tr>
+          <tr>
+            <th>Checkliste</th>
+            <td>{escape(checklist_status_label)}</td>
+          </tr>
+          <tr>
+            <th>Ergebnis</th>
+            <td>{escape(result_label)}</td>
+          </tr>
+          <tr>
+            <th>Angelegt</th>
+            <td>{escape(str(incident["created_at"]))}</td>
+          </tr>
+        </table>
 
-          <dt>Status</dt>
-          <dd><span class="status">{escape(str(incident["status"]))}</span></dd>
-
-          <dt>Checkliste</dt>
-          <dd><span class="status">{escape(checklist_status_label)}</span></dd>
-
-          <dt>Ergebnis</dt>
-          <dd><span class="status">{escape(result_label)}</span></dd>
-
-          <dt>Angelegt</dt>
-          <dd>{escape(str(incident["created_at"]))}</dd>
-        </dl>
-
-        <p>
-          <a class="button" href="/incidents/{escape(incident_id)}/checklist">
-            {escape(checklist["id"])} – {escape(checklist["title"])}
-          </a>
-        </p>
+        <a class="button primary-action"
+           href="/incidents/{escape(incident_id)}/checklist">
+          Jetzt Checkliste öffnen und Schritt für Schritt durchführen
+        </a>
 
         {result_actions}
 
