@@ -11,7 +11,7 @@ app = FastAPI(title="IT-Notfall Orchestrator")
 
 incidents: dict[str, dict[str, str]] = {}
 
-CHECKLIST_DIR = Path("/app/checklists")
+CHECKLIST_DIR = Path("/app/checklists/generated")
 
 
 def page(title: str, body: str) -> HTMLResponse:
