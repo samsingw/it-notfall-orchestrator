@@ -9,8 +9,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 app = FastAPI(title="IT-Notfall Orchestrator")
 
-incidents: dict[str, dict[str, str]] = {}
-
+incidents: dict[str, dict[str, str | None]] = {}
 CHECKLIST_DIR = Path("/app/checklists/generated")
 
 
@@ -34,6 +33,7 @@ def page(title: str, body: str) -> HTMLResponse:
         font: inherit;
         display: inline-block;
         padding: .8rem 1rem;
+        margin: .25rem .25rem .25rem 0;
       }}
       .status {{
         display: inline-block;
@@ -54,6 +54,11 @@ def page(title: str, body: str) -> HTMLResponse:
         padding: .75rem;
         margin: 1rem 0;
       }}
+      .result-actions {{
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #bbb;
+      }}
       code {{
         overflow-wrap: anywhere;
       }}
@@ -70,13 +75,19 @@ def load_checklist(checklist_id: str) -> dict:
     path = CHECKLIST_DIR / f"{checklist_id}.json"
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Checkliste nicht gefunden")
-
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
 
 
 def render_list(items: list[str]) -> str:
     return "<ul>" + "".join(f"<li>{escape(item)}</li>" for item in items) + "</ul>"
+
+
+def get_incident(incident_id: str) -> dict[str, str | None]:
+    incident = incidents.get(incident_id)
+    if incident is None:
+        raise HTTPException(status_code=404, detail="Incident nicht gefunden")
+    return incident
 
 
 @app.get("/health")
@@ -91,7 +102,6 @@ def index() -> HTMLResponse:
         """
         <h1>IT-Notfall Orchestrator</h1>
         <p>Walking Skeleton: Incident anlegen.</p>
-
         <form method="post" action="/incidents">
           <button type="submit">Incident „SmartTag funktioniert nicht“ anlegen</button>
         </form>
@@ -102,7 +112,6 @@ def index() -> HTMLResponse:
 @app.post("/incidents")
 def create_incident() -> RedirectResponse:
     incident_id = f"INC-{uuid4().hex[:8].upper()}"
-
     incidents[incident_id] = {
         "id": incident_id,
         "title": "SmartTag funktioniert nicht",
@@ -110,54 +119,79 @@ def create_incident() -> RedirectResponse:
         "created_at": datetime.now(timezone.utc).isoformat(),
         "checklist_id": "M-ST-001",
         "checklist_status": "NOT_STARTED",
+        "result": None,
     }
-
-    return RedirectResponse(
-        url=f"/incidents/{incident_id}",
-        status_code=303,
-    )
+    return RedirectResponse(url=f"/incidents/{incident_id}", status_code=303)
 
 
 @app.get("/incidents/{incident_id}", response_class=HTMLResponse)
 def show_incident(incident_id: str) -> HTMLResponse:
-    incident = incidents.get(incident_id)
-    if incident is None:
-        raise HTTPException(status_code=404, detail="Incident nicht gefunden")
+    incident = get_incident(incident_id)
+    checklist = load_checklist(str(incident["checklist_id"]))
 
-    checklist = load_checklist(incident["checklist_id"])
+    checklist_status = str(incident.get("checklist_status") or "NOT_STARTED")
+    checklist_status_label = {
+        "NOT_STARTED": "Noch nicht begonnen",
+        "IN_PROGRESS": "In Bearbeitung",
+        "COMPLETED": "Checkliste abgeschlossen",
+    }.get(checklist_status, checklist_status)
 
-    checklist_status = incident["checklist_status"]
-    if checklist_status == "COMPLETED":
-        checklist_label = "Checkliste abgeschlossen"
-    elif checklist_status == "IN_PROGRESS":
-        checklist_label = "Checkliste begonnen"
-    else:
-        checklist_label = "Noch nicht begonnen"
+    result = incident.get("result")
+    result_label = {
+        "SOLVED": "Gelöst",
+        "UNRESOLVED": "Nicht gelöst",
+    }.get(result, "Noch nicht festgelegt")
+
+    result_actions = ""
+    if checklist_status == "COMPLETED" and result is None:
+        result_actions = f"""
+        <div class="result-actions">
+          <h2>Ergebnis</h2>
+          <p>Hat die Maßnahme das Problem gelöst?</p>
+
+          <form method="post"
+                action="/incidents/{escape(incident_id)}/result/solved"
+                style="display:inline">
+            <button type="submit">Gelöst</button>
+          </form>
+
+          <form method="post"
+                action="/incidents/{escape(incident_id)}/result/unresolved"
+                style="display:inline">
+            <button type="submit">Nicht gelöst</button>
+          </form>
+        </div>
+        """
 
     return page(
-        incident["id"],
+        str(incident["id"]),
         f"""
-        <h1>{escape(incident['title'])}</h1>
+        <h1>{escape(str(incident["title"]))}</h1>
 
         <dl>
           <dt>Incident-ID</dt>
-          <dd><code>{escape(incident['id'])}</code></dd>
+          <dd><code>{escape(str(incident["id"]))}</code></dd>
 
           <dt>Status</dt>
-          <dd><span class="status">{escape(incident['status'])}</span></dd>
-
-          <dt>Angelegt</dt>
-          <dd>{escape(incident['created_at'])}</dd>
+          <dd><span class="status">{escape(str(incident["status"]))}</span></dd>
 
           <dt>Checkliste</dt>
-          <dd><span class="status">{escape(checklist_label)}</span></dd>
+          <dd><span class="status">{escape(checklist_status_label)}</span></dd>
+
+          <dt>Ergebnis</dt>
+          <dd><span class="status">{escape(result_label)}</span></dd>
+
+          <dt>Angelegt</dt>
+          <dd>{escape(str(incident["created_at"]))}</dd>
         </dl>
 
         <p>
           <a class="button" href="/incidents/{escape(incident_id)}/checklist">
-            {escape(checklist['id'])} – {escape(checklist['title'])}
+            {escape(checklist["id"])} – {escape(checklist["title"])}
           </a>
         </p>
+
+        {result_actions}
 
         <p><a href="/">Zurück</a></p>
         """,
@@ -166,14 +200,12 @@ def show_incident(incident_id: str) -> HTMLResponse:
 
 @app.get("/incidents/{incident_id}/checklist", response_class=HTMLResponse)
 def show_checklist(incident_id: str) -> HTMLResponse:
-    incident = incidents.get(incident_id)
-    if incident is None:
-        raise HTTPException(status_code=404, detail="Incident nicht gefunden")
+    incident = get_incident(incident_id)
 
-    if incident["checklist_status"] == "NOT_STARTED":
+    if incident.get("checklist_status") == "NOT_STARTED":
         incident["checklist_status"] = "IN_PROGRESS"
 
-    checklist = load_checklist(incident["checklist_id"])
+    checklist = load_checklist(str(incident["checklist_id"]))
 
     body = [
         f"<h1>{escape(checklist['id'])} – {escape(checklist['title'])}</h1>",
@@ -195,35 +227,37 @@ def show_checklist(incident_id: str) -> HTMLResponse:
             body.append(render_list(step["expected"]))
             body.append("</div>")
 
-        if step.get("if_not"):
-            body.append(f"<p><strong>Wenn nicht:</strong> {escape(step['if_not'])}</p>")
-
-        if step.get("image_placeholder"):
+        if step.get("image"):
             body.append(
-                '<div class="placeholder"><strong>Bildplatzhalter:</strong> '
-                + escape(step["image_placeholder"])
-                + "</div>"
+                '<div class="placeholder"><strong>Bild:</strong> '
+                + escape(step["image"]["caption"])
+                + " ("
+                + escape(step["image"]["file"])
+                + ")</div>"
             )
 
         body.append("</section>")
 
-    body.extend(
-        [
-            "<h2>Abschluss</h2>",
-            f"<p>{escape(checklist['completion'])}</p>",
-        ]
-    )
+    body.extend([
+        "<h2>Abschluss</h2>",
+        f"<p>{escape(checklist['completion'])}</p>",
+    ])
 
-    if incident["checklist_status"] == "COMPLETED":
-        body.append('<p><strong>Checkliste wurde abgeschlossen.</strong></p>')
-    else:
+    if incident.get("checklist_status") != "COMPLETED":
         body.append(
-            f'''<form method="post" action="/incidents/{escape(incident_id)}/checklist/complete">
-  <button type="submit">Checkliste abgeschlossen</button>
-</form>'''
+            f"""
+            <form method="post"
+                  action="/incidents/{escape(incident_id)}/checklist/complete">
+              <button type="submit">Checkliste abgeschlossen</button>
+            </form>
+            """
         )
+    else:
+        body.append("<p><strong>Checkliste abgeschlossen.</strong></p>")
 
-    body.append(f'<p><a href="/incidents/{escape(incident_id)}">Zurück zum Incident</a></p>')
+    body.append(
+        f'<p><a href="/incidents/{escape(incident_id)}">Zurück zum Incident</a></p>'
+    )
 
     return page(
         f"{checklist['id']} – {checklist['title']}",
@@ -233,13 +267,32 @@ def show_checklist(incident_id: str) -> HTMLResponse:
 
 @app.post("/incidents/{incident_id}/checklist/complete")
 def complete_checklist(incident_id: str) -> RedirectResponse:
-    incident = incidents.get(incident_id)
-    if incident is None:
-        raise HTTPException(status_code=404, detail="Incident nicht gefunden")
-
+    incident = get_incident(incident_id)
     incident["checklist_status"] = "COMPLETED"
+    return RedirectResponse(url=f"/incidents/{incident_id}", status_code=303)
 
-    return RedirectResponse(
-        url=f"/incidents/{incident_id}",
-        status_code=303,
-    )
+
+@app.post("/incidents/{incident_id}/result/solved")
+def mark_solved(incident_id: str) -> RedirectResponse:
+    incident = get_incident(incident_id)
+    if incident.get("checklist_status") != "COMPLETED":
+        raise HTTPException(
+            status_code=409,
+            detail="Checkliste muss zuerst abgeschlossen werden",
+        )
+    incident["result"] = "SOLVED"
+    incident["status"] = "SOLVED"
+    return RedirectResponse(url=f"/incidents/{incident_id}", status_code=303)
+
+
+@app.post("/incidents/{incident_id}/result/unresolved")
+def mark_unresolved(incident_id: str) -> RedirectResponse:
+    incident = get_incident(incident_id)
+    if incident.get("checklist_status") != "COMPLETED":
+        raise HTTPException(
+            status_code=409,
+            detail="Checkliste muss zuerst abgeschlossen werden",
+        )
+    incident["result"] = "UNRESOLVED"
+    incident["status"] = "UNRESOLVED"
+    return RedirectResponse(url=f"/incidents/{incident_id}", status_code=303)

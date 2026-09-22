@@ -1,27 +1,47 @@
-# Manuelle Synchronisation von M-ST-001
+# Update: Ergebnis „gelöst / nicht gelöst“
 
-Dieses Paket gehört ausschließlich in `samsingw/it-notfall-orchestrator`.
+Dieses Update gehört ausschließlich in das Source-/Image-Repository
+`samsingw/it-notfall-orchestrator`.
 
-## Source of Truth
+Enthalten:
 
-Nicht die JSON-Datei pflegen.
+```text
+app/main.py
+```
 
-Maßgeblich ist:
+Nach Abschluss von M-ST-001 erscheinen auf der Incident-Seite zwei Buttons:
 
-`IT-Notfall/docs/10_Massnahmen/SmartHome/M-ST-001_Batterie-Samsung-SmartTag-1-wechseln.md`
+- `Gelöst`
+- `Nicht gelöst`
 
-`checklists/generated/M-ST-001.json` ist nur ein vorläufig manuell synchronisiertes
-Laufzeit-Artefakt.
+Die Auswahl wird derzeit nur im RAM gespeichert.
 
-## Übernahme
+`Gelöst` setzt:
 
-1. `checklists/generated/M-ST-001.json` ins Orchestrator-Repo übernehmen.
-2. Die alte `checklists/M-ST-001.json` entfernen.
-3. In `app/main.py` den `CHECKLIST_DIR` wie in `app/CHECKLIST_DIR.patch.txt`
-   auf `/app/checklists/generated` ändern.
-4. Das vorhandene Dockerfile kann unverändert bleiben, sofern es bereits
-   `COPY checklists ./checklists` enthält.
-5. Build + Rollout durchführen.
+```text
+result = SOLVED
+status = SOLVED
+```
 
-Die echten Bilder werden in diesem Schritt noch nicht vom Orchestrator ausgeliefert.
-Das JSON enthält nur deren Referenzen. Die Bildintegration kommt separat.
+`Nicht gelöst` setzt:
+
+```text
+result = UNRESOLVED
+status = UNRESOLVED
+```
+
+Noch nicht enthalten:
+
+- Datenbank
+- Persistenz
+- Wiederherstellung nach Pod-Neustart
+
+Abnahmetest auf Test und Prod:
+
+1. neuen Incident anlegen
+2. M-ST-001 öffnen
+3. Checkliste abschließen
+4. `Gelöst` wählen und Anzeige prüfen
+5. neuen Incident anlegen
+6. Checkliste abschließen
+7. `Nicht gelöst` wählen und Anzeige prüfen
